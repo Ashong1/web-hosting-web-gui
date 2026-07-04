@@ -165,10 +165,14 @@ class DeployAppJob implements ShouldQueue
             if (!isset($progress['dns_configured'])) {
                 $broadcast('dns', 'processing', 'Securing Cloudflare edge routing...', 90);
                 $subdomain = str_replace('.aserotech.com', '', $this->instance->public_url);
-                $tunnelTarget = config('services.cloudflare.tunnel_target');
+                $tunnelTarget = ($this->instance->node && $this->instance->node->tunnel_target)
+                    ? $this->instance->node->tunnel_target
+                    : config('services.cloudflare.tunnel_target');
                 
                 $cloudflare->createDnsRecord($subdomain, $tunnelTarget, 'CNAME', true);
-                $dokploy->addDomain($applicationId, $this->instance->public_url, 80, true);
+                
+                $port = (int) ($this->instance->credentials['container_port'] ?? 80);
+                $dokploy->addDomain($applicationId, $this->instance->public_url, $port, true);
 
                 $progress['dns_configured'] = true;
                 $this->instance->update(['provisioning_progress' => $progress]);

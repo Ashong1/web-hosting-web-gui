@@ -36,6 +36,16 @@ export default function Dashboard({ auth, pendingOrders, totalClients, activeIns
         });
     };
 
+    const handleRejectSubmit = (e) => {
+        e.preventDefault();
+        post(route('admin.orders.reject', selectedOrder.id), {
+            onSuccess: () => {
+                setSelectedOrder(null);
+                reset('notes');
+            }
+        });
+    };
+
     const openModal = (order) => {
         setSelectedOrder(order);
         setShowRejectForm(false);
@@ -55,7 +65,7 @@ export default function Dashboard({ auth, pendingOrders, totalClients, activeIns
 
             {/* Key Metrics Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white dark:bg-[#161615] p-6 rounded-3xl shadow-sm border border-zinc-200 dark:border-white/5 relative overflow-hidden group">
+                <div className="glass-card p-6 rounded-3xl relative overflow-hidden group">
                     <div className="relative z-10 flex flex-col gap-4">
                         <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
                             <Users size={20} />
@@ -73,7 +83,7 @@ export default function Dashboard({ auth, pendingOrders, totalClients, activeIns
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#161615] p-6 rounded-3xl shadow-sm border border-zinc-200 dark:border-white/5 relative overflow-hidden group">
+                <div className="glass-card p-6 rounded-3xl relative overflow-hidden group">
                     <div className="relative z-10 flex flex-col gap-4">
                         <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
                             <Server size={20} />
@@ -91,7 +101,7 @@ export default function Dashboard({ auth, pendingOrders, totalClients, activeIns
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#161615] p-6 rounded-3xl shadow-sm border border-zinc-200 dark:border-white/5 relative overflow-hidden group">
+                <div className="glass-card p-6 rounded-3xl relative overflow-hidden group">
                     <div className="relative z-10 flex flex-col gap-4">
                         <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-white/5 flex items-center justify-center text-zinc-500 dark:text-zinc-400 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
                             <CircleDollarSign size={20} />
@@ -106,7 +116,7 @@ export default function Dashboard({ auth, pendingOrders, totalClients, activeIns
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-[#161615] p-6 rounded-3xl shadow-sm border border-zinc-200 dark:border-white/5 relative overflow-hidden group">
+                <div className="glass-card p-6 rounded-3xl relative overflow-hidden group">
                     <div className="relative z-10 flex flex-col gap-4">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${pendingOrders.length > 0 ? 'bg-amber-500/10 text-amber-500' : 'bg-zinc-100 dark:bg-white/5 text-zinc-400'}`}>
                             <Clock size={20} />
@@ -130,7 +140,7 @@ export default function Dashboard({ auth, pendingOrders, totalClients, activeIns
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
                     {/* Order Fulfillment Queue */}
-                    <div className="bg-white dark:bg-[#161615] rounded-[2rem] shadow-sm border border-zinc-200 dark:border-white/5 overflow-hidden">
+                    <div className="glass-panel rounded-[2rem] overflow-hidden">
                         <div className="px-8 py-6 border-b border-zinc-200 dark:border-white/5 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                             <div>
                                 <h3 className="text-xl font-black tracking-tight text-zinc-900 dark:text-white uppercase">Fulfillment Queue</h3>
@@ -196,7 +206,7 @@ export default function Dashboard({ auth, pendingOrders, totalClients, activeIns
                     </div>
 
                     {/* System Health Status (Native Design) */}
-                    <div className="bg-white dark:bg-[#161615] rounded-[2rem] shadow-sm border border-zinc-200 dark:border-white/5 overflow-hidden">
+                    <div className="glass-panel rounded-[2rem] overflow-hidden">
                         <div className="px-8 py-6 border-b border-zinc-200 dark:border-white/5 flex items-center justify-between">
                             <h3 className="text-xl font-black tracking-tight text-zinc-900 dark:text-white uppercase">Infrastructure Health</h3>
                             <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 animate-pulse">
@@ -211,7 +221,7 @@ export default function Dashboard({ auth, pendingOrders, totalClients, activeIns
 
                 <div className="space-y-8">
                     {/* Activity Log */}
-                    <div className="bg-white dark:bg-[#161615] rounded-[2rem] shadow-sm border border-zinc-200 dark:border-white/5 overflow-hidden">
+                    <div className="glass-panel rounded-[2rem] overflow-hidden">
                         <div className="px-8 py-6 border-b border-zinc-200 dark:border-white/5">
                             <h3 className="text-xl font-black tracking-tight text-zinc-900 dark:text-white uppercase">System Activity</h3>
                         </div>
@@ -244,7 +254,7 @@ export default function Dashboard({ auth, pendingOrders, totalClients, activeIns
             {selectedOrder && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md" onClick={() => setSelectedOrder(null)}></div>
-                    <div className="relative w-full max-w-4xl bg-white dark:bg-[#09090b] rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row overflow-hidden border border-zinc-200 dark:border-white/5">
+                    <div className="relative w-full max-w-4xl glass-modal rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row overflow-hidden">
                         <div className="flex-1 bg-zinc-100 dark:bg-black/40 flex items-center justify-center p-8">
                             {selectedOrder.payment_proof_path ? (
                                 <img src={`/storage/${selectedOrder.payment_proof_path}`} className="max-w-full max-h-[500px] rounded-2xl shadow-2xl" />
@@ -267,10 +277,58 @@ export default function Dashboard({ auth, pendingOrders, totalClients, activeIns
                                     <p className="text-sm font-bold uppercase">{selectedOrder.plan_name}</p>
                                 </div>
                             </div>
-                            <div className="flex gap-4">
-                                <button onClick={() => approve(selectedOrder.id)} disabled={processing} className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest">Approve</button>
-                                <button onClick={() => setSelectedOrder(null)} className="flex-1 py-4 bg-zinc-100 dark:bg-white/5 rounded-2xl font-black text-xs uppercase tracking-widest">Close</button>
-                            </div>
+                            {!showRejectForm ? (
+                                <div className="space-y-3">
+                                    <button 
+                                        onClick={() => approve(selectedOrder.id)} 
+                                        disabled={processing} 
+                                        className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all text-white rounded-2xl font-black text-xs uppercase tracking-widest"
+                                    >
+                                        Approve & Deploy
+                                    </button>
+                                    <button 
+                                        onClick={() => setShowRejectForm(true)} 
+                                        className="w-full py-4 bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all text-white rounded-2xl font-black text-xs uppercase tracking-widest"
+                                    >
+                                        Reject Transaction
+                                    </button>
+                                    <button 
+                                        onClick={() => setSelectedOrder(null)} 
+                                        className="w-full py-4 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 active:scale-95 transition-all rounded-2xl font-black text-xs uppercase tracking-widest text-zinc-900 dark:text-white"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleRejectSubmit} className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-zinc-400 uppercase">Rejection Reason</label>
+                                        <textarea
+                                            value={data.notes}
+                                            onChange={e => setData('notes', e.target.value)}
+                                            placeholder="Enter rejection reason for client..."
+                                            required
+                                            className="w-full h-32 p-4 rounded-2xl bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm placeholder-zinc-400"
+                                        />
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <button 
+                                            type="submit" 
+                                            disabled={processing} 
+                                            className="flex-1 py-4 bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all text-white rounded-2xl font-black text-xs uppercase tracking-widest"
+                                        >
+                                            Reject
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => { setShowRejectForm(false); reset('notes'); }} 
+                                            className="flex-1 py-4 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 active:scale-95 transition-all rounded-2xl font-black text-xs uppercase tracking-widest text-zinc-900 dark:text-white"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
                         </div>
                     </div>
                 </div>

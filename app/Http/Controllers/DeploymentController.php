@@ -17,6 +17,7 @@ class DeploymentController extends Controller
     {
         return Inertia::render('Deployments/Create', [
             'plans' => Plan::where('is_active', true)->orderBy('price', 'asc')->get(),
+            'templates' => config('templates'),
         ]);
     }
 
@@ -41,6 +42,7 @@ class DeploymentController extends Controller
             'memory' => 'required_if:plan_id,custom|nullable|integer|min:512|max:16384',
             'storage' => 'required_if:plan_id,custom|nullable|integer|min:10|max:200',
             'replicas' => 'nullable|integer|min:1|max:5',
+            'container_port' => 'nullable|integer|min:1|max:65535',
         ]);
 
         if ($request->plan_id === 'custom') {

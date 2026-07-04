@@ -91,4 +91,68 @@ class FleetManagementTest extends TestCase
         $this->assertDatabaseMissing('instances', ['id' => $instance->id]);
         $this->assertEquals('rejected', $order->fresh()->status);
     }
+
+    public function test_admin_can_filter_fleet_by_search_query()
+    {
+        $admin = User::factory()->create(['role' => 'root']);
+        $user1 = User::factory()->create(['role' => 'client', 'email' => 'client1@example.com']);
+        $user2 = User::factory()->create(['role' => 'client', 'email' => 'other@example.com']);
+
+        $order1 = Order::create([
+            'user_id' => $user1->id,
+            'plan_name' => 'Basic',
+            'amount' => 100,
+            'status' => 'fulfilled'
+        ]);
+        $order2 = Order::create([
+            'user_id' => $user2->id,
+            'plan_name' => 'Premium',
+            'amount' => 300,
+            'status' => 'fulfilled'
+        ]);
+
+        $instance1 = Instance::create([
+            'user_id' => $user1->id,
+            'order_id' => $order1->id,
+            'name' => 'Alpha App',
+            'dokploy_service_id' => 'svc_1',
+            'status' => 'active',
+            'public_url' => 'alpha.aserotech.com'
+        ]);
+
+        $instance2 = Instance::create([
+            'user_id' => $user2->id,
+            'order_id' => $order2->id,
+            'name' => 'Beta App',
+            'dokploy_service_id' => 'svc_2',
+            'status' => 'active',
+            'public_url' => 'beta.aserotech.com'
+        ]);
+
+        $this->mock(DokployService::class, function ($mock) {
+            $mock->shouldReceive('getAllApplications')->andReturn([
+                ['id' => 'svc_1', 'status' => 'running'],
+                ['id' => 'svc_2', 'status' => 'running']
+            ]);
+        });
+
+        // Filter by name 'Alpha'
+        $response = $this->actingAs($admin)->get(route('admin.fleet.index', ['search' => 'Alpha']));
+        $response->assertStatus(200);
+        
+        $pageData = $response->original->getData()['page'];
+        $instances = $pageData['props']['instances']['data'];
+        $this->assertCount(1, $instances);
+        $this->assertEquals('Alpha App', $instances[0]['name']);
+
+        // Filter by user email 'client1'
+        $response = $this->actingAs($admin)->get(route('admin.fleet.index', ['search' => 'client1']));
+        $response->assertStatus(200);
+        
+        $pageData = $response->original->getData()['page'];
+        $instances = $pageData['props']['instances']['data'];
+        $this->assertCount(1, $instances);
+        $this->assertEquals('Alpha App', $instances[0]['name']);
+    }
 }
+

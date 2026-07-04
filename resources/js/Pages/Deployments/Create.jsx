@@ -21,7 +21,7 @@ import {
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { toast } from 'sonner';
 
-export default function Create({ auth, plans }) {
+export default function Create({ auth, plans, templates }) {
     const { pricing_rates } = usePage().props;
     const cpuRate = pricing_rates?.cpu ?? 250;
     const ramRate = pricing_rates?.ram ?? 150;
@@ -29,12 +29,22 @@ export default function Create({ auth, plans }) {
 
     const [step, setStep] = useState(1);
     const [runTour, setRunTour] = useState(false);
+    const [selectedTemplateKey, setSelectedTemplateKey] = useState('');
 
     useEffect(() => {
         if (new URLSearchParams(window.location.search).get('tour') === 'true') {
             setRunTour(true);
         }
     }, []);
+
+    const adjectives = ['sparkling', 'neon', 'swift', 'emerald', 'mystic', 'cosmic', 'aurora', 'shadow', 'solar', 'glacial', 'velvet', 'quantum'];
+    const nouns = ['galaxy', 'phoenix', 'glacier', 'vortex', 'pulse', 'canyon', 'ridge', 'zenith', 'nebula', 'rift', 'beacon', 'horizon'];
+    const generateRandomName = () => {
+        const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+        const noun = nouns[Math.floor(Math.random() * nouns.length)];
+        const num = Math.floor(Math.random() * 900) + 100;
+        return `${adj}-${noun}-${num}`;
+    };
 
     const { data, setData, post, processing, errors } = useForm({
         plan_id: '',
@@ -55,7 +65,48 @@ export default function Create({ auth, plans }) {
         memory: 1024,
         storage: 10,
         replicas: 1,
+        container_port: 80,
     });
+
+    const selectTemplate = (key) => {
+        setSelectedTemplateKey(key);
+        if (key === 'custom') {
+            setData(prev => ({
+                ...prev,
+                project_type: 'application',
+                build_strategy: 'nixpacks',
+                repository_url: '',
+                repository_branch: 'main',
+                install_command: 'npm install',
+                build_command: 'npm run build',
+                database_type: 'none',
+                container_port: 80,
+                env_vars: [{ key: '', value: '' }],
+                volumes: [],
+            }));
+            return;
+        }
+
+        const template = templates[key];
+        if (template) {
+            const randomName = generateRandomName();
+            setData(prev => ({
+                ...prev,
+                project_type: template.project_type ?? 'application',
+                build_strategy: template.build_strategy ?? 'nixpacks',
+                repository_url: template.repository_url ?? '',
+                repository_branch: template.repository_branch ?? 'master',
+                install_command: template.install_command ?? '',
+                build_command: template.build_command ?? '',
+                database_type: template.database_type ?? 'none',
+                container_port: template.container_port ?? 80,
+                env_vars: template.env_vars && template.env_vars.length > 0 ? template.env_vars : [{ key: '', value: '' }],
+                volumes: template.volumes ?? [],
+                app_name: randomName.replace(/-/g, ' ').toUpperCase(),
+                subdomain: randomName,
+            }));
+        }
+    };
 
     const handleAddEnv = () => setData('env_vars', [...data.env_vars, { key: '', value: '' }]);
     const handleEnvChange = (index, field, value) => {
@@ -169,6 +220,51 @@ export default function Create({ auth, plans }) {
                 <form onSubmit={submit} className="p-10 lg:p-16 space-y-12">
                     {step === 1 && (
                         <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
+                            {/* App Templates Catalog */}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">1-Click Deployment Templates</label>
+                                    {selectedTemplateKey && (
+                                        <button 
+                                            type="button" 
+                                            onClick={() => selectTemplate('custom')} 
+                                            className="text-[9px] font-black text-red-500 hover:text-red-400 uppercase tracking-widest transition-colors"
+                                        >
+                                            Clear Selection
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {Object.entries(templates || {}).map(([key, template]) => {
+                                        const isSelected = selectedTemplateKey === key;
+                                        return (
+                                            <button
+                                                key={key}
+                                                type="button"
+                                                onClick={() => selectTemplate(key)}
+                                                className={`p-5 rounded-3xl border text-left transition-all flex flex-col justify-between h-44 relative overflow-hidden group ${
+                                                    isSelected 
+                                                    ? 'bg-emerald-500 border-emerald-500 text-white shadow-xl shadow-emerald-500/20' 
+                                                    : 'bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-white/5 text-zinc-700 dark:text-zinc-300 hover:border-emerald-500/30'
+                                                }`}
+                                            >
+                                                <div>
+                                                    <h5 className="font-black text-xs uppercase tracking-wider mb-2">{template.name}</h5>
+                                                    <p className="text-[9px] font-medium leading-relaxed opacity-75">{template.description}</p>
+                                                </div>
+                                                <span className={`text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg self-start ${
+                                                    isSelected 
+                                                    ? 'bg-white/20 text-white' 
+                                                    : 'bg-zinc-100 dark:bg-white/5 text-zinc-400 dark:text-zinc-500 group-hover:text-emerald-500 transition-colors'
+                                                }`}>
+                                                    {isSelected ? 'Selected' : 'Deploy Template'}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">Orchestration Type</label>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -394,7 +490,7 @@ export default function Create({ auth, plans }) {
                         <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
                             {data.project_type === 'application' ? (
                                 <>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                         <div className="space-y-4">
                                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">Build Strategy</label>
                                             <div className="grid grid-cols-2 gap-3">
@@ -417,6 +513,10 @@ export default function Create({ auth, plans }) {
                                         <div className="space-y-4">
                                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">Git Branch</label>
                                             <input type="text" value={data.repository_branch} onChange={e => setData('repository_branch', e.target.value)} className="w-full p-5 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 rounded-2xl outline-none text-sm font-bold" />
+                                        </div>
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">Container Port (Proxy Destination)</label>
+                                            <input type="number" min="1" max="65535" value={data.container_port} onChange={e => setData('container_port', parseInt(e.target.value) || 80)} className="w-full p-5 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 rounded-2xl outline-none text-sm font-bold" required />
                                         </div>
                                     </div>
 

@@ -227,7 +227,7 @@ export default function Show({ auth, instance }) {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-8 space-y-8">
-                    {instance.deployment_status === 'deploying' && (
+                    {(instance.deployment_status === 'deploying' || instance.status === 'failed' || instance.deployment_status === 'failed') && (
                         <div className="animate-in fade-in slide-in-from-top-4 duration-700">
                             <BuildLogsViewer instanceId={instance.id} />
                         </div>
@@ -422,6 +422,59 @@ export default function Show({ auth, instance }) {
 
                                 <button disabled={scalingForm.processing} className="w-full py-5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50">Commit Infrastructure Update</button>
                             </form>
+                        </div>
+                    )}
+
+                    {activeTab === 'cicd' && (
+                        <div className="bg-white dark:bg-[#161615] rounded-[2rem] p-8 md:p-12 border border-zinc-200 dark:border-white/5 space-y-10">
+                            <div className="flex items-center gap-6">
+                                <div className="p-4 rounded-3xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                    <Zap size={28} />
+                                </div>
+                                <div className="space-y-1">
+                                    <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter">CI/CD Continuous Deployment</h3>
+                                    <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-widest">Configure git repository webhooks to automate node synthesis.</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Payload URL</label>
+                                    <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-black/20 rounded-2xl border border-zinc-100 dark:border-white/5">
+                                        <code className="text-xs font-mono truncate text-zinc-900 dark:text-zinc-300">
+                                            {route('webhooks.deploy', instance.id)}
+                                        </code>
+                                        <button onClick={() => copyToClipboard(route('webhooks.deploy', instance.id))} className="text-emerald-500"><Copy size={14} /></button>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Secret Token</label>
+                                    <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-black/20 rounded-2xl border border-zinc-100 dark:border-white/5">
+                                        <code className="text-xs font-mono truncate text-zinc-900 dark:text-zinc-300">
+                                            {showSecret ? instance.webhook_secret : '••••••••••••••••••••••••••••••••'}
+                                        </code>
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={() => setShowSecret(!showSecret)} className="text-zinc-400 hover:text-zinc-600">
+                                                {showSecret ? <Lock size={14} /> : <ShieldCheck size={14} />}
+                                            </button>
+                                            <button onClick={() => copyToClipboard(instance.webhook_secret)} className="text-emerald-500"><Copy size={14} /></button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-6 rounded-2xl bg-zinc-50 dark:bg-black/25 border border-zinc-100 dark:border-white/5 space-y-4">
+                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Setup Instructions (GitHub)</h4>
+                                    <ol className="list-decimal list-inside text-xs text-zinc-500 space-y-2 leading-relaxed">
+                                        <li>Go to your GitHub repository settings page.</li>
+                                        <li>Select <span className="font-bold text-zinc-700 dark:text-zinc-300">Webhooks</span> in the sidebar, and click <span className="font-bold text-zinc-700 dark:text-zinc-300">Add webhook</span>.</li>
+                                        <li>Paste the <span className="font-bold text-zinc-700 dark:text-zinc-300">Payload URL</span> above into the URL field.</li>
+                                        <li>Set the content type to <code className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-white/10 font-mono text-[10px]">application/json</code>.</li>
+                                        <li>Paste the <span className="font-bold text-zinc-700 dark:text-zinc-300">Secret Token</span> above into the Secret field.</li>
+                                        <li>Click <span className="font-bold text-zinc-700 dark:text-zinc-300">Add webhook</span> to finish continuous deployment setup.</li>
+                                    </ol>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>

@@ -10,9 +10,23 @@ use Inertia\Inertia;
 
 class FleetController extends Controller
 {
-    public function index(DokployService $dokploy)
+    public function index(Request $request, DokployService $dokploy)
     {
-        $instances = Instance::with(['user', 'order'])->latest()->paginate(15);
+        $query = Instance::with(['user', 'order'])->latest();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('public_url', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($uq) use ($search) {
+                      $uq->where('email', 'like', "%{$search}%")
+                        ->orWhere('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $instances = $query->paginate(15)->withQueryString();
         $liveApplications = collect($dokploy->getAllApplications());
 
         $instances->getCollection()->transform(function ($instance) use ($liveApplications) {
@@ -22,7 +36,8 @@ class FleetController extends Controller
         });
 
         return Inertia::render('Admin/Fleet/Index', [
-            'instances' => $instances
+            'instances' => $instances,
+            'filters' => $request->only(['search']),
         ]);
     }
 

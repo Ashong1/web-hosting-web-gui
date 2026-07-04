@@ -77,6 +77,40 @@ class WatcherService extends Command
                         ]);
                     }
                 }
+
+                // Webhook Fail-safe: Reconcile stuck deploying or pending instances (older than 5 minutes)
+                $deployingInstances = $node->instances()
+                    ->whereIn('deployment_status', ['deploying', 'pending'])
+                    ->where('updated_at', '<', now()->subMinutes(5))
+                    ->get();
+
+                foreach ($deployingInstances as $instance) {
+                    $live = $liveApps->firstWhere('id', $instance->dokploy_service_id);
+                    if ($live) {
+                        $currentStatus = $live['status'] ?? 'unknown';
+                        if ($currentStatus === 'running') {
+                            $this->info("Fail-safe Sync: Stuck deploying instance {$instance->id} resolved to running.");
+                            $instance->update([
+                                'status' => 'active',
+                                'deployment_status' => 'live'
+                            ]);
+                            \Illuminate\Support\Facades\Cache::put("instance.{$instance->id}.live_status", 'running', now()->addDays(7));
+                            event(new NodeStatusUpdated($instance, 'running'));
+                            broadcast(new \App\Events\SystemSignalBroadcast($instance->user, "Fail-safe: {$instance->name} has been recovered and is now operational."));
+                            AuditLog::log('instance.failsafe_recovery', $instance, ['status' => 'running']);
+                        } elseif ($currentStatus === 'failed' || $currentStatus === 'error') {
+                            $this->warn("Fail-safe Sync: Stuck deploying instance {$instance->id} resolved to failed.");
+                            $instance->update([
+                                'status' => 'failed',
+                                'deployment_status' => 'failed'
+                            ]);
+                            \Illuminate\Support\Facades\Cache::put("instance.{$instance->id}.live_status", 'stopped', now()->addDays(7));
+                            event(new NodeStatusUpdated($instance, 'stopped'));
+                            broadcast(new \App\Events\SystemSignalBroadcast($instance->user, "Fail-safe: {$instance->name} deployment was marked as failed."));
+                            AuditLog::log('instance.failsafe_recovery', $instance, ['status' => 'failed']);
+                        }
+                    }
+                }
             } catch (\Exception $e) {
                 $this->error("Failed to sync with Node #{$node->id}: " . $e->getMessage());
             }

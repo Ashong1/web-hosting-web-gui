@@ -121,9 +121,12 @@ export default function Index({ auth, plans, adminSettings }) {
                             <div className="w-14 h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 group-hover:text-emerald-500 group-hover:scale-110 transition-all duration-500 shadow-inner">
                                 <Box size={28} />
                             </div>
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">₱{parseFloat(plan.price).toLocaleString()}</span>
-                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">/mo</span>
+                            <div className="flex flex-col items-end gap-1.5">
+                                <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 leading-none">Bundle Discount Applied</span>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">₱{parseFloat(plan.price).toLocaleString()}</span>
+                                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">/mo</span>
+                                </div>
                             </div>
                         </div>
 
@@ -161,18 +164,23 @@ export default function Index({ auth, plans, adminSettings }) {
                         <p className="text-sm text-zinc-400 font-medium leading-relaxed line-clamp-2">Build your own virtual hosting cluster. Scale vCPU, Memory, and SSD storage dynamically.</p>
                     </div>
                     
-                    <div className="flex-1 space-y-4 mb-10 text-zinc-300">
-                        <div className="flex items-center gap-3 text-sm font-bold">
-                            <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500"><CheckCircle2 size={12} strokeWidth={3} /></div>
-                            0.5 to 8 vCPU Cores (₱{cpuRate}/core)
+                    <div className="flex-1 flex flex-col justify-between">
+                        <div className="space-y-4 mb-8 text-zinc-300">
+                            <div className="flex items-center gap-3 text-sm font-bold">
+                                <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500"><CheckCircle2 size={12} strokeWidth={3} /></div>
+                                0.5 to 8 vCPU Cores (₱{cpuRate}/core)
+                            </div>
+                            <div className="flex items-center gap-3 text-sm font-bold">
+                                <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500"><CheckCircle2 size={12} strokeWidth={3} /></div>
+                                512 MB to 16 GB RAM (₱{ramRate}/GB)
+                            </div>
+                            <div className="flex items-center gap-3 text-sm font-bold">
+                                <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500"><CheckCircle2 size={12} strokeWidth={3} /></div>
+                                10 GB to 200 GB Storage (₱{storageRate}/GB)
+                            </div>
                         </div>
-                        <div className="flex items-center gap-3 text-sm font-bold">
-                            <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500"><CheckCircle2 size={12} strokeWidth={3} /></div>
-                            512 MB to 16 GB RAM (₱{ramRate}/GB)
-                        </div>
-                        <div className="flex items-center gap-3 text-sm font-bold">
-                            <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500"><CheckCircle2 size={12} strokeWidth={3} /></div>
-                            10 GB to 200 GB Storage (₱{storageRate}/GB)
+                        <div className="text-[10px] text-zinc-400 font-medium leading-relaxed border-t border-zinc-800 pt-4 mb-8">
+                            * Custom resources use on-demand rates. Standard plans have pre-packaged bundle discounts of up to 68% pre-applied.
                         </div>
                     </div>
                     
@@ -349,6 +357,9 @@ export default function Index({ auth, plans, adminSettings }) {
                                                 </div>
                                                 <div className="text-[8px] font-black uppercase text-zinc-400 tracking-widest text-right leading-relaxed">
                                                     Rates: ₱{cpuRate}/vCPU · ₱{ramRate}/GB RAM · ₱{storageRate}/GB SSD
+                                                </div>
+                                                <div className="text-[9px] text-zinc-400 font-medium leading-relaxed mt-1">
+                                                    * Note: On-demand rates apply to custom configurations. Pre-packaged plans include bundle discounts.
                                                 </div>
                                             </div>
                                         </div>

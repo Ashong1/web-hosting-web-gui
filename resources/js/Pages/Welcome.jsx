@@ -31,10 +31,13 @@ import {
     UserPlus,
     Palette,
     TrendingUp,
-    Users
+    Users,
+    X,
+    Minus
 } from 'lucide-react';
 import { useTheme } from '@/Components/ThemeProvider';
 import { motion } from 'framer-motion';
+import AiChathead from '@/Components/AiChathead';
 
 export default function Welcome({ plans }) {
     const { auth, pricing_rates } = usePage().props;
@@ -48,6 +51,55 @@ export default function Welcome({ plans }) {
     const [sgLatency, setSgLatency] = useState(null);
     const [isYearly, setIsYearly] = useState(false);
     const [activeFaq, setActiveFaq] = useState(null);
+    const [selectedCompetitor, setSelectedCompetitor] = useState('hostinger');
+
+    const competitorData = {
+        hostinger: {
+            name: "Hostinger",
+            latency: "25ms - 60ms",
+            infra: "Shared Hosting",
+            payment: "Credit Card / PayPal",
+            contract: "Up to 48 months",
+            reseller: "Separate VPS panel",
+            support: "English / Global Support"
+        },
+        bluehost: {
+            name: "Bluehost",
+            latency: "150ms+",
+            infra: "Shared Hosting",
+            payment: "Credit Card Only",
+            contract: "Up to 36 months",
+            reseller: "ResellerClub addon",
+            support: "English / Global Support"
+        },
+        godaddy: {
+            name: "GoDaddy",
+            latency: "160ms+",
+            infra: "Shared Hosting",
+            payment: "Credit Card / PayPal",
+            contract: "Up to 36 months",
+            reseller: "Separate paid program",
+            support: "English / Global Support"
+        },
+        dreamhost: {
+            name: "DreamHost",
+            latency: "180ms+",
+            infra: "Shared Hosting",
+            payment: "Credit Card Only",
+            contract: "Up to 36 months",
+            reseller: "None",
+            support: "English / Global Support"
+        },
+        ionos: {
+            name: "IONOS",
+            latency: "200ms+",
+            infra: "Shared / Cloud",
+            payment: "Credit Card Only",
+            contract: "Up to 36 months",
+            reseller: "None",
+            support: "Dedicated agent (Global)"
+        }
+    };
 
     const displaySg = sgLatency;
     const displayLocal = (latency && sgLatency)
@@ -522,6 +574,203 @@ export default function Welcome({ plans }) {
                     </div>
                 </section>
 
+                {/* AseroTech vs. Global Giants Comparison Section */}
+                <section id="comparison" className="w-full py-20 border-t border-zinc-200 dark:border-white/5 flex flex-col items-center gap-16">
+                    <div className="text-center space-y-4">
+                        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] md:text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">
+                            <Sparkles size={12} />
+                            Battle of the Hosts
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-zinc-900 dark:text-white uppercase leading-none">AseroTech vs. Global Giants</h2>
+                        <p className="text-zinc-500 dark:text-zinc-400 font-medium text-sm max-w-lg mx-auto">
+                            See how our local PH-based containerized cloud infrastructure outperforms global budget providers.
+                        </p>
+                    </div>
+
+                    {/* Mobile Comparison View (Tabs + Side-by-Side Cards) */}
+                    <div className="w-full md:hidden space-y-8">
+                        {/* Selector Tabs */}
+                        <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-none px-4 justify-start">
+                            {[
+                                { id: 'hostinger', name: 'Hostinger' },
+                                { id: 'bluehost', name: 'Bluehost' },
+                                { id: 'godaddy', name: 'GoDaddy' },
+                                { id: 'dreamhost', name: 'DreamHost' },
+                                { id: 'ionos', name: 'IONOS' }
+                            ].map((comp) => (
+                                <button
+                                    key={comp.id}
+                                    type="button"
+                                    onClick={() => setSelectedCompetitor(comp.id)}
+                                    className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-wider border shrink-0 transition-all ${
+                                        selectedCompetitor === comp.id
+                                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                                            : 'bg-white dark:bg-[#161615] border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5'
+                                    }`}
+                                >
+                                    {comp.name}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Side-by-Side Mobile Cards */}
+                        <div className="grid grid-cols-1 gap-6 px-4">
+                            {/* AseroTech Card */}
+                            <div className="bg-emerald-500/5 border-2 border-emerald-500/20 rounded-[2.5rem] p-8 space-y-6 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-4 opacity-5">
+                                    <Box size={80} className="text-emerald-500" />
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-white"><Zap size={16} /></div>
+                                    <h4 className="text-lg font-black uppercase tracking-tight text-emerald-500">AseroTech Cloud</h4>
+                                </div>
+                                <div className="space-y-4">
+                                    {[
+                                        { label: "Server Latency (PH)", val: displayLocal ? `⚡ ${displayLocal}ms (Local PH)` : "⚡ 3ms - 15ms (Local PH)" },
+                                        { label: "Infrastructure", val: "Dedicated Private Containers" },
+                                        { label: "Payment Options", val: "GCash & Maya (Prepaid wallet)" },
+                                        { label: "Contract & Billing", val: "No Lock-in / Pay-as-you-go" },
+                                        { label: "White-Label Reseller", val: "Built-in Reseller Shop" },
+                                        { label: "Customer Support", val: "Tagalog & English Support" }
+                                    ].map((item, idx) => (
+                                        <div key={idx} className="space-y-1">
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{item.label}</p>
+                                            <p className="text-xs font-bold text-zinc-900 dark:text-white uppercase flex items-center gap-1.5">
+                                                <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
+                                                {item.val}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Competitor Card */}
+                            <div className="bg-white dark:bg-[#161615] border border-zinc-200 dark:border-white/5 rounded-[2.5rem] p-8 space-y-6 relative">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-white/5 flex items-center justify-center text-zinc-400"><X size={16} /></div>
+                                    <h4 className="text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-white">
+                                        {competitorData[selectedCompetitor].name}
+                                    </h4>
+                                </div>
+                                <div className="space-y-4">
+                                    {[
+                                        { label: "Server Latency (PH)", val: competitorData[selectedCompetitor].latency },
+                                        { label: "Infrastructure", val: competitorData[selectedCompetitor].infra },
+                                        { label: "Payment Options", val: competitorData[selectedCompetitor].payment },
+                                        { label: "Contract & Billing", val: competitorData[selectedCompetitor].contract },
+                                        { label: "White-Label Reseller", val: competitorData[selectedCompetitor].reseller },
+                                        { label: "Customer Support", val: competitorData[selectedCompetitor].support }
+                                    ].map((item, idx) => (
+                                        <div key={idx} className="space-y-1">
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{item.label}</p>
+                                            <p className="text-xs font-medium text-zinc-600 dark:text-zinc-300 uppercase flex items-center gap-1.5">
+                                                <Minus size={14} className="text-zinc-400 shrink-0" />
+                                                {item.val}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Desktop Comparison Table */}
+                    <div className="hidden md:block w-full max-w-5xl overflow-hidden bg-white/50 dark:bg-[#161615]/50 backdrop-blur-xl rounded-[3rem] border border-zinc-200 dark:border-white/5 shadow-xl">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="border-b border-zinc-200 dark:border-white/5">
+                                    <th className="p-8 text-[10px] font-black uppercase tracking-widest text-zinc-400 w-[20%]">Features</th>
+                                    <th className="p-8 text-[11px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10 border-x border-emerald-500/10 w-[20%] text-center">
+                                        <div className="flex flex-col items-center gap-1.5">
+                                            <span className="bg-emerald-500 text-white text-[8px] px-2 py-0.5 rounded-full uppercase tracking-wider">Recommended</span>
+                                            AseroTech Cloud
+                                        </div>
+                                    </th>
+                                    <th className="p-8 text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white w-[12%] text-center">Hostinger</th>
+                                    <th className="p-8 text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white w-[12%] text-center">Bluehost</th>
+                                    <th className="p-8 text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white w-[12%] text-center">GoDaddy</th>
+                                    <th className="p-8 text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white w-[12%] text-center">DreamHost</th>
+                                    <th className="p-8 text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white w-[12%] text-center">IONOS</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-zinc-200 dark:divide-white/5 text-xs font-bold uppercase tracking-tight text-zinc-700 dark:text-zinc-300">
+                                {/* Latency Row */}
+                                <tr>
+                                    <td className="p-8 text-[10px] text-zinc-400 font-black">PH Latency</td>
+                                    <td className="p-8 text-center bg-emerald-500/5 dark:bg-emerald-500/10 border-x border-emerald-500/10 text-emerald-500 font-mono">
+                                        {displayLocal ? `${displayLocal}ms` : '3ms - 15ms'}
+                                    </td>
+                                    <td className="p-8 text-center text-zinc-500 font-mono">25ms-60ms</td>
+                                    <td className="p-8 text-center text-zinc-500 font-mono">150ms+</td>
+                                    <td className="p-8 text-center text-zinc-500 font-mono">160ms+</td>
+                                    <td className="p-8 text-center text-zinc-500 font-mono">180ms+</td>
+                                    <td className="p-8 text-center text-zinc-500 font-mono">200ms+</td>
+                                </tr>
+                                {/* Architecture Row */}
+                                <tr>
+                                    <td className="p-8 text-[10px] text-zinc-400 font-black">Hosting Type</td>
+                                    <td className="p-8 text-center bg-emerald-500/5 dark:bg-emerald-500/10 border-x border-emerald-500/10 text-zinc-900 dark:text-white">
+                                        Private Containers
+                                    </td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Shared Hosting</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Shared Hosting</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Shared Hosting</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Shared Hosting</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Shared / Cloud</td>
+                                </tr>
+                                {/* Payments Row */}
+                                <tr>
+                                    <td className="p-8 text-[10px] text-zinc-400 font-black">PH Payment Apps</td>
+                                    <td className="p-8 text-center bg-emerald-500/5 dark:bg-emerald-500/10 border-x border-emerald-500/10 text-zinc-900 dark:text-white">
+                                        GCash & Maya
+                                    </td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Credit Card / PP</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Credit Card Only</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Credit Card / PP</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Credit Card Only</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Credit Card Only</td>
+                                </tr>
+                                {/* Billing Model Row */}
+                                <tr>
+                                    <td className="p-8 text-[10px] text-zinc-400 font-black">Lock-in Period</td>
+                                    <td className="p-8 text-center bg-emerald-500/5 dark:bg-emerald-500/10 border-x border-emerald-500/10 text-zinc-900 dark:text-white">
+                                        None (Pay-as-you-go)
+                                    </td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Up to 48 months</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Up to 36 months</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Up to 36 months</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Up to 36 months</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Up to 36 months</td>
+                                </tr>
+                                {/* Reseller Row */}
+                                <tr>
+                                    <td className="p-8 text-[10px] text-zinc-400 font-black">Reseller Panel</td>
+                                    <td className="p-8 text-center bg-emerald-500/5 dark:bg-emerald-500/10 border-x border-emerald-500/10 text-zinc-900 dark:text-white">
+                                        Built-in (Free)
+                                    </td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">VPS Panel only</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Separate Addon</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">Separate Program</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">None</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">None</td>
+                                </tr>
+                                {/* Support Row */}
+                                <tr>
+                                    <td className="p-8 text-[10px] text-zinc-400 font-black">Support Language</td>
+                                    <td className="p-8 text-center bg-emerald-500/5 dark:bg-emerald-500/10 border-x border-emerald-500/10 text-zinc-900 dark:text-white">
+                                        Tagalog & English
+                                    </td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">English Only</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">English Only</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">English Only</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">English Only</td>
+                                    <td className="p-8 text-center text-zinc-500 font-normal">English Only</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
                 {/* Core Features Grid */}
                 <div className="space-y-12 w-full border-t border-zinc-200 dark:border-white/5 pt-20">
                     <div className="text-center space-y-4">
@@ -806,6 +1055,7 @@ export default function Welcome({ plans }) {
                     <p className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-400 opacity-50">AseroTechCloud is a DTI-registered business.</p>
                 </div>
             </footer>
+            <AiChathead />
         </div>
     );
 }

@@ -1,11 +1,19 @@
-import React from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import React, { useState } from 'react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { Server, User, Globe, Play, Square, Trash2, ExternalLink, Search, Filter, Cpu, Layers } from 'lucide-react';
 import Pagination from '@/Components/Pagination';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
-export default function Index({ auth, instances }) {
+export default function Index({ auth, instances, filters = {} }) {
+    const [search, setSearch] = useState(filters.search || '');
     const { post, processing } = useForm();
+
+    const handleFilter = () => {
+        router.get(route('admin.fleet.index'), { search }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
 
     const performAction = (instanceId, action) => {
         if (action === 'terminate' && !confirm('Are you absolutely sure? This will destroy all data.')) {
@@ -24,9 +32,27 @@ export default function Index({ auth, instances }) {
                     <p className="text-zinc-500 dark:text-zinc-400 font-medium text-sm">Monitor and control every container instance across your worker nodes.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 shadow-sm">
+                    <div className="flex items-center bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-2 shadow-sm relative">
                         <Search size={18} className="text-zinc-400 mr-2" />
-                        <input type="text" placeholder="Filter fleet..." className="bg-transparent border-none outline-none text-sm font-medium w-48" />
+                        <input 
+                            type="text" 
+                            placeholder="Filter fleet..." 
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            onKeyPress={e => e.key === 'Enter' && handleFilter()}
+                            className="bg-transparent border-none outline-none text-sm font-medium w-48 focus:ring-0 pr-6" 
+                        />
+                        {search && (
+                            <button 
+                                onClick={() => {
+                                    setSearch('');
+                                    router.get(route('admin.fleet.index'));
+                                }}
+                                className="absolute right-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-white font-bold"
+                            >
+                                &times;
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

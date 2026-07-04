@@ -33,6 +33,7 @@ import {
 import { Toaster, toast } from 'sonner';
 import { useTheme } from '@/Components/ThemeProvider';
 import { motion, AnimatePresence } from 'framer-motion';
+import AiChathead from '@/Components/AiChathead';
 
 export default function AuthenticatedLayout({ children }) {
     const { url, props } = usePage();
@@ -255,20 +256,25 @@ export default function AuthenticatedLayout({ children }) {
     );
 
     return (
-        <div className="min-h-screen bg-[#FDFDFC] dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 transition-colors duration-500 font-sans flex overflow-hidden">
+        <div className="min-h-screen bg-[#FDFDFC] dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 transition-colors duration-500 font-sans flex overflow-hidden relative">
+            {/* Glowing background elements for Liquid Glass theme */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-500/10 dark:bg-emerald-500/5 blur-[120px] animate-pulse" style={{ animationDuration: '8s' }}></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 dark:bg-blue-500/5 blur-[120px] animate-pulse" style={{ animationDuration: '12s' }}></div>
+            </div>
             <Toaster richColors position="top-right" />
             
             {/* Desktop Sidebar */}
             <motion.aside 
                 animate={{ width: isCollapsed ? 72 : 260 }}
                 transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-                className="hidden lg:block h-screen sticky top-0 border-r border-zinc-200 dark:border-white/5 bg-white dark:bg-[#09090b] z-50 overflow-hidden"
+                className="hidden lg:block h-screen sticky top-0 z-50 overflow-hidden glass-sidebar"
             >
                 {sidebarJSX}
             </motion.aside>
 
             {/* Mobile Header Bar */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-[#09090b]/80 backdrop-blur-xl border-b border-zinc-200 dark:border-white/5 z-[100] px-4 flex items-center justify-between">
+            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 z-[100] px-4 flex items-center justify-between glass-panel !rounded-none !border-b !border-0">
                 <div className="flex items-center gap-2">
                     <button 
                         onClick={() => setIsMobileOpen(!isMobileOpen)}
@@ -312,7 +318,7 @@ export default function AuthenticatedLayout({ children }) {
                             animate={{ x: 0 }}
                             exit={{ x: '-100%' }}
                             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                            className="fixed inset-y-0 left-0 w-[280px] bg-white dark:bg-[#09090b] z-[120] lg:hidden shadow-2xl overflow-hidden"
+                            className="fixed inset-y-0 left-0 w-[280px] z-[120] lg:hidden shadow-2xl overflow-hidden glass-sidebar"
                         >
                             {sidebarJSX}
                         </motion.aside>
@@ -336,7 +342,7 @@ export default function AuthenticatedLayout({ children }) {
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white dark:bg-[#09090b] z-[160] shadow-2xl overflow-hidden flex flex-col"
+                            className="fixed inset-y-0 right-0 w-full max-w-md z-[160] shadow-2xl overflow-hidden flex flex-col glass-sidebar !border-l !border-r-0"
                         >
                             <div className="p-8 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center bg-zinc-50/50 dark:bg-white/[0.02]">
                                 <div className="space-y-1">
@@ -378,9 +384,9 @@ export default function AuthenticatedLayout({ children }) {
             </AnimatePresence>
 
             {/* Main Content Area */}
-            <div className="flex-1 min-w-0 h-screen overflow-y-auto relative pt-16 lg:pt-0">
+            <div className="flex-1 min-w-0 h-screen overflow-y-auto relative pt-16 lg:pt-0 z-10">
                 {/* Minimal Top Bar for Desktop */}
-                <nav className="hidden lg:flex h-16 px-8 items-center justify-between bg-white/50 dark:bg-[#09090b]/50 backdrop-blur-md sticky top-0 z-40 border-b border-zinc-100 dark:border-white/5">
+                <nav className="hidden lg:flex h-16 px-8 items-center justify-between sticky top-0 z-40 glass-panel !rounded-none !border-b !border-0">
                     <div className="flex items-center gap-4">
                         <button 
                             onClick={() => setIsCollapsed(!isCollapsed)}
@@ -415,7 +421,7 @@ export default function AuthenticatedLayout({ children }) {
                                 )}
                             </button>
                             
-                            <div className="absolute top-full right-0 mt-4 w-96 p-6 bg-white dark:bg-[#161615] rounded-[2.5rem] shadow-2xl border border-zinc-200 dark:border-white/5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all translate-y-2 group-hover:translate-y-0 z-[110]">
+                            <div className="absolute top-full right-0 mt-4 w-96 p-6 rounded-[2.5rem] shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all translate-y-2 group-hover:translate-y-0 z-[110] glass-modal">
                                 <div className="flex justify-between items-center mb-6">
                                     <div className="space-y-0.5">
                                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Signals</p>
@@ -506,6 +512,53 @@ export default function AuthenticatedLayout({ children }) {
                     <p className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-400">AseroTechCloud is a DTI-registered business.</p>
                 </footer>
             </div>
+
+            {/* Logout Confirmation Modal */}
+            <AnimatePresence>
+                {showLogoutConfirm && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-zinc-950/85 backdrop-blur-md"
+                    >
+                        <motion.div 
+                            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                            className="rounded-[2.5rem] p-8 md:p-10 max-w-sm w-full shadow-2xl text-center relative overflow-hidden glass-modal"
+                        >
+                            <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-[1.25rem] flex items-center justify-center text-red-500 mx-auto mb-6">
+                                <LogOut size={24} />
+                            </div>
+                            
+                            <h3 className="text-xl font-black tracking-tight text-zinc-900 dark:text-white uppercase mb-2">Engage Sign Out?</h3>
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium mb-8 leading-relaxed">
+                                You are about to terminate your administrative session. Active build pipelines will continue running in the background.
+                            </p>
+
+                            <div className="flex gap-4">
+                                <button 
+                                    onClick={() => setShowLogoutConfirm(false)}
+                                    className="flex-1 py-4 rounded-xl bg-zinc-100 dark:bg-white/5 text-zinc-500 hover:text-zinc-700 dark:hover:text-white font-black text-[10px] uppercase tracking-widest transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        setShowLogoutConfirm(false);
+                                        router.post(route('logout'));
+                                    }}
+                                    className="flex-1 py-4 bg-red-600 hover:bg-red-500 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-red-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                >
+                                    Sign Out
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            <AiChathead />
         </div>
     );
 }

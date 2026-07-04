@@ -30,8 +30,86 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 import TransmissionCenter from '@/Components/TransmissionCenter';
 
-export default function Dashboard({ auth, instances, recentActivity }) {
+export default function Dashboard({ auth, instances, recentActivity, templates, plans }) {
     const { post, processing } = useForm();
+    const oneClickForm = useForm({
+        plan_id: '',
+        project_type: 'application',
+        database_type: 'none',
+        build_strategy: 'nixpacks',
+        app_name: '',
+        subdomain: '',
+        repository_url: '',
+        repository_branch: 'main',
+        install_command: 'npm install',
+        build_command: 'npm run build',
+        compose_file: '',
+        env_vars: [{ key: '', value: '' }],
+        volumes: [],
+        aup_agreed: true,
+        cpu: 1,
+        memory: 1024,
+        storage: 10,
+        replicas: 1,
+        container_port: 80,
+    });
+
+    const adjectives = ['sparkling', 'neon', 'swift', 'emerald', 'mystic', 'cosmic', 'aurora', 'shadow', 'solar', 'glacial', 'velvet', 'quantum'];
+    const nouns = ['galaxy', 'phoenix', 'glacier', 'vortex', 'pulse', 'canyon', 'ridge', 'zenith', 'nebula', 'rift', 'beacon', 'horizon'];
+    const generateRandomName = () => {
+        const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+        const noun = nouns[Math.floor(Math.random() * nouns.length)];
+        const num = Math.floor(Math.random() * 900) + 100;
+        return `${adj}-${noun}-${num}`;
+    };
+
+    const deployTemplateOneClick = (key) => {
+        const template = templates[key];
+        const defaultPlan = plans[0]; // Cheapest active plan
+        if (!defaultPlan) {
+            toast.error('No active billing plans found.');
+            return;
+        }
+
+        if (auth.user.credits < defaultPlan.price) {
+            toast.error(`Insufficient credits. You need at least ₱${defaultPlan.price} to deploy.`);
+            return;
+        }
+
+        const randomName = generateRandomName();
+        const payload = {
+            plan_id: defaultPlan.id.toString(),
+            project_type: template.project_type ?? 'application',
+            database_type: template.database_type ?? 'none',
+            build_strategy: template.build_strategy ?? 'nixpacks',
+            app_name: randomName.replace(/-/g, ' ').toUpperCase(),
+            subdomain: randomName,
+            repository_url: template.repository_url ?? '',
+            repository_branch: template.repository_branch ?? 'master',
+            install_command: template.install_command ?? '',
+            build_command: template.build_command ?? '',
+            compose_file: '',
+            env_vars: template.env_vars && template.env_vars.length > 0 ? template.env_vars : [{ key: '', value: '' }],
+            volumes: template.volumes ?? [],
+            aup_agreed: true,
+            cpu: defaultPlan.resource_limits?.cpu ?? 1,
+            memory: defaultPlan.resource_limits?.memory ?? 1024,
+            storage: defaultPlan.resource_limits?.storage ?? 10,
+            replicas: defaultPlan.resource_limits?.replicas ?? 1,
+            container_port: template.container_port ?? 80,
+        };
+
+        router.post(route('deploy.store'), payload, {
+            onSuccess: () => {
+                toast.success(`Synthesis engaged. ${payload.app_name} is launching!`);
+            },
+            onError: (err) => {
+                const firstError = Object.values(err)[0];
+                toast.error(firstError || 'Deployment failed.');
+            }
+        });
+    };
+
     const [filter, setFilter] = useState('all');
     const [localInstances, setLocalInstances] = useState(instances || []);
     const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -155,7 +233,7 @@ export default function Dashboard({ auth, instances, recentActivity }) {
                             initial={{ scale: 0.95, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                            className="bg-white dark:bg-[#161615] rounded-2xl md:rounded-[3rem] p-6 md:p-10 max-w-lg w-full shadow-2xl border border-emerald-500/20 text-center relative overflow-hidden"
+                            className="glass-modal rounded-2xl md:rounded-[3rem] p-6 md:p-10 max-w-lg w-full shadow-2xl border border-emerald-500/20 text-center relative overflow-hidden"
                         >
                             <div className="absolute -top-20 -right-20 w-40 h-40 bg-emerald-500/20 blur-3xl rounded-full"></div>
                             
@@ -211,12 +289,49 @@ export default function Dashboard({ auth, instances, recentActivity }) {
                 </div>
             </motion.div>
 
+            {/* Quick Deploy Templates Section */}
+            <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-4"
+            >
+                <div className="flex items-center justify-between">
+                    <h3 className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-zinc-400">1-Click Launch Protocol</h3>
+                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/5 px-2.5 py-1 rounded-lg">Cheapest active tier auto-selected</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {Object.entries(templates || {}).map(([key, template]) => (
+                        <motion.button
+                            key={key}
+                            onClick={() => deployTemplateOneClick(key)}
+                            disabled={oneClickForm.processing}
+                            whileHover={{ y: -4, scale: 1.03 }}
+                            className="group text-left p-6 glass-card hover:border-emerald-500/30 rounded-3xl transition-all duration-300 hover:shadow-xl flex flex-col justify-between h-40 relative overflow-hidden active:scale-95"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div className="relative z-10 space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="text-sm font-black uppercase tracking-wider text-zinc-900 dark:text-white leading-none">{template.name}</h4>
+                                    <Zap size={14} className="text-zinc-400 group-hover:text-emerald-500 group-hover:scale-125 transition-all duration-300" fill="currentColor" />
+                                </div>
+                                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed line-clamp-2">{template.description}</p>
+                            </div>
+                            <div className="relative z-10 flex items-center justify-between mt-4">
+                                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest group-hover:underline">Engage Now</span>
+                                <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">Port {template.container_port}</span>
+                            </div>
+                        </motion.button>
+                    ))}
+                </div>
+            </motion.div>
+
             {/* Bento Grid Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
                 <motion.div 
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="md:col-span-8 bg-white dark:bg-[#161615] rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-zinc-200 dark:border-white/5 shadow-sm relative overflow-hidden group"
+                    whileHover={{ y: -2, scale: 1.01 }}
+                    className="md:col-span-8 glass-panel rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 relative overflow-hidden group"
                 >
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
                     <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6 md:gap-8">
@@ -247,7 +362,8 @@ export default function Dashboard({ auth, instances, recentActivity }) {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     onClick={() => setFilter(filter === 'running' ? 'all' : 'running')}
-                    className={`md:col-span-4 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border shadow-sm flex flex-col justify-between group transition-all duration-500 text-left relative overflow-hidden ${filter === 'running' ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white dark:bg-[#161615] border-zinc-200 dark:border-white/5 text-zinc-900 dark:text-white'}`}
+                    whileHover={{ y: -2, scale: 1.01 }}
+                    className={`md:col-span-4 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 flex flex-col justify-between group transition-all duration-500 text-left relative overflow-hidden ${filter === 'running' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/10' : 'glass-panel text-zinc-900 dark:text-white'}`}
                 >
                     <div className={`flex items-center gap-3 relative z-10 ${filter === 'running' ? 'text-white/80' : 'text-zinc-400'}`}>
                         <Container size={16} />
@@ -280,7 +396,8 @@ export default function Dashboard({ auth, instances, recentActivity }) {
                                         key={instance.id} 
                                         variants={item}
                                         layout
-                                        className={`group relative bg-white dark:bg-[#161615] border border-zinc-200 dark:border-white/5 rounded-[2rem] md:rounded-[3rem] overflow-hidden flex flex-col transition-all duration-500 hover:shadow-2xl ${isRunning ? 'hover:border-emerald-500/30 shadow-emerald-500/5' : instance.order?.status === 'suspended' ? 'border-amber-500/50 shadow-amber-500/5' : 'hover:border-blue-500/30'}`}
+                                        whileHover={{ y: -4, scale: 1.02 }}
+                                        className={`group relative glass-card rounded-[2rem] md:rounded-[3rem] overflow-hidden flex flex-col transition-all duration-500 hover:shadow-2xl ${isRunning ? 'hover:border-emerald-500/30 shadow-emerald-500/5' : instance.order?.status === 'suspended' ? 'border-amber-500/50 shadow-amber-500/5' : 'hover:border-blue-500/30'}`}
                                     >
                                         {/* Suspension Banner */}
                                         {instance.order?.status === 'suspended' && (
@@ -425,7 +542,8 @@ export default function Dashboard({ auth, instances, recentActivity }) {
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: i * 0.05 }}
-                                        className="p-4 md:p-5 bg-white dark:bg-[#161615] border border-zinc-200 dark:border-white/5 rounded-2xl md:rounded-3xl group/log hover:border-emerald-500/20 transition-all shadow-sm"
+                                        whileHover={{ x: 4, scale: 1.01 }}
+                                        className="p-4 md:p-5 glass-card rounded-2xl md:rounded-3xl group/log hover:border-emerald-500/20 transition-all shadow-sm cursor-pointer"
                                     >
                                         <div className="flex gap-3 md:gap-4">
                                             <div className={`w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-zinc-50 dark:bg-white/5 flex items-center justify-center text-zinc-400 group-hover/log:text-emerald-500 transition-colors`}>
@@ -448,7 +566,7 @@ export default function Dashboard({ auth, instances, recentActivity }) {
                             )}
                         </div>
 
-                        <Link href={route('security.activity')} className="block w-full py-3 md:py-4 text-center border border-zinc-200 dark:border-white/5 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 transition-all">
+                        <Link href={route('security.activity')} className="block w-full py-3 md:py-4 text-center rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 transition-all glass-panel">
                             View Full Log
                         </Link>
                     </div>

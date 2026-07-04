@@ -54,12 +54,40 @@ class ProvisionInstanceAction
             ]);
 
             // Load Balancing: Select active node with the least number of instances
-            $node = \App\Models\Node::where('is_active', true)
+            $nodes = \App\Models\Node::where('is_active', true)
                 ->withCount('instances')
                 ->orderBy('instances_count', 'asc')
-                ->first();
+                ->get();
 
-            if (!$node) throw new \Exception("No active compute nodes available for synthesis.");
+            $selectedNode = null;
+            foreach ($nodes as $n) {
+                // If running unit tests, skip the real network check
+                if (app()->runningUnitTests()) {
+                    $selectedNode = $n;
+                    break;
+                }
+
+                try {
+                    $response = \Illuminate\Support\Facades\Http::withHeaders([
+                        'x-api-key' => $n->api_key,
+                    ])->acceptJson()
+                      ->timeout(2) // Fast timeout for responsiveness check
+                      ->get("{$n->api_url}/api/project.all");
+
+                    if ($response->successful()) {
+                        $selectedNode = $n;
+                        break;
+                    }
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::warning("Pre-flight health check failed for Node ID {$n->id}: " . $e->getMessage());
+                }
+            }
+
+            if (!$selectedNode) {
+                throw new \Exception("No active, responsive compute nodes available for synthesis.");
+            }
+
+            $node = $selectedNode;
 
             $instance = Instance::create([
                 'user_id' => $user->id,
@@ -85,6 +113,7 @@ class ProvisionInstanceAction
                     'memory' => $memory,
                     'storage' => $storage,
                     'replicas' => $replicas,
+                    'container_port' => (int) ($data['container_port'] ?? 80),
                 ],
             ]);
 

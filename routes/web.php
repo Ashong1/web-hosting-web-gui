@@ -41,6 +41,8 @@ Route::get('/refund-policy', function () {
     return Inertia::render('Legal/RefundPolicy');
 })->name('legal.refund');
 
+Route::post('/ask-ai', [InstanceController::class, 'askAiGeneral'])->name('ask_ai_general');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [InstanceController::class, 'index'])->name('dashboard');
     Route::get('/instances/{instance}', [InstanceController::class, 'show'])->name('instances.show');
@@ -72,6 +74,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/instances/{instance}/terminal/input', [InstanceController::class, 'terminalInput'])->name('instances.terminal.input');
     Route::get('/instances/{instance}/deployments', [InstanceController::class, 'deployments'])->name('instances.deployments');
     Route::get('/instances/{instance}/build-logs', [InstanceController::class, 'buildLogs'])->name('instances.build_logs');
+    Route::post('/instances/{instance}/diagnose-logs', [InstanceController::class, 'diagnoseLogs'])->name('instances.diagnose_logs');
+    Route::post('/instances/{instance}/ask-ai', [InstanceController::class, 'askAi'])->name('instances.ask_ai');
     Route::post('/instances/{instance}/rollback/{deployment}', [InstanceController::class, 'rollback'])->name('instances.rollback');
 
     Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');

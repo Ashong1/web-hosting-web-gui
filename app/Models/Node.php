@@ -19,9 +19,15 @@ class Node extends Model
     ];
 
     protected $casts = [
+        'api_key' => 'encrypted',
         'resource_stats' => 'array',
         'is_active' => 'boolean',
     ];
+
+    public function getTunnelTargetAttribute(): ?string
+    {
+        return $this->resource_stats['tunnel_target'] ?? config('services.cloudflare.tunnel_target');
+    }
 
     public function instances(): HasMany
     {

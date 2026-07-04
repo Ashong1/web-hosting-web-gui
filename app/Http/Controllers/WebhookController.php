@@ -83,7 +83,12 @@ class WebhookController extends Controller
         $secret = $instance->webhook_secret;
 
         // 1. Signature Verification (GitHub Standard)
-        if ($signature && $secret) {
+        if ($secret) {
+            if (!$signature) {
+                Log::warning("Git Webhook missing signature for Instance: {$instance->id}");
+                return response()->json(['error' => 'Missing signature header'], 401);
+            }
+
             $payload = $request->getContent();
             $hash = 'sha256=' . hash_hmac('sha256', $payload, $secret);
 
