@@ -9,6 +9,13 @@
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+    /* Corporate Hub Branding Palette */
+    --color-brand-bg-dark: #0f172a;       /* Slate-900 */
+    --color-brand-card-dark: #1e293b;     /* Slate-800 */
+    --color-brand-bg-light: #f8fafc;      /* Slate-50 */
+    --color-brand-primary: #4f46e5;       /* Indigo-600 */
+    --color-brand-success: #10b981;       /* Emerald-500 */
 }
 
 @layer base {
@@ -109,7 +116,7 @@
     }
 
     .dark .glass-panel {
-        background: rgba(18, 18, 18, 0.45) !important;
+        background: rgba(15, 23, 42, 0.45) !important; /* Slate-900 background tint */
         backdrop-filter: blur(20px) saturate(160%) !important;
         -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
         border: 1px solid rgba(255, 255, 255, 0.03) !important;
@@ -129,7 +136,7 @@
     }
 
     .dark .glass-card {
-        background: rgba(22, 22, 21, 0.4) !important;
+        background: rgba(30, 41, 59, 0.4) !important; /* Slate-800 background tint */
         backdrop-filter: blur(16px) saturate(150%) !important;
         -webkit-backdrop-filter: blur(16px) saturate(150%) !important;
         border: 1px solid rgba(255, 255, 255, 0.02) !important;
@@ -149,7 +156,7 @@
     }
 
     .dark .glass-modal {
-        background: rgba(9, 9, 11, 0.6) !important;
+        background: rgba(15, 23, 42, 0.6) !important; /* Slate-900 tint */
         backdrop-filter: blur(24px) saturate(170%) !important;
         -webkit-backdrop-filter: blur(24px) saturate(170%) !important;
         border: 1px solid rgba(255, 255, 255, 0.04) !important;
@@ -166,7 +173,7 @@
     }
 
     .dark .glass-sidebar {
-        background: rgba(9, 9, 11, 0.45) !important;
+        background: rgba(15, 23, 42, 0.45) !important; /* Slate-900 tint */
         backdrop-filter: blur(20px) saturate(150%) !important;
         -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
         border-right: 1px solid rgba(255, 255, 255, 0.02) !important;
@@ -185,4 +192,59 @@
         -webkit-backdrop-filter: blur(8px) !important;
         border: 1px solid rgba(255, 255, 255, 0.04) !important;
     }
+}
+
+/* --- Corporate Hub & Portal Styling Overrides --- */
+
+/* Global backgrounds override: Slate-50 (#f8fafc) & Slate-900 (#0f172a) */
+html, body, .min-h-screen.bg-\[\#FDFDFC\], .bg-\[\#FDFDFC\], .bg-\[\#fdfdfc\] {
+    background-color: #f8fafc !important;
+}
+
+.dark, .dark html, .dark body, .dark .dark\:bg-\[\#09090b\], .dark .bg-\[\#09090b\] {
+    background-color: #0f172a !important;
+}
+
+/* Surface Card Overrides: Slate-800 (#1e293b) */
+.dark .dark\:bg-\[\#161615\], .dark .bg-\[\#161615\] {
+    background-color: #1e293b !important;
+}
+
+/* Primary buttons custom styling remap: Indigo-600 (#4f46e5) */
+button.bg-emerald-600,
+a.bg-emerald-600,
+button.bg-emerald-500,
+a.bg-emerald-500,
+.btn-primary {
+    background-color: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+    color: #ffffff !important;
+}
+
+button.bg-emerald-600:hover,
+a.bg-emerald-600:hover,
+button.bg-emerald-500:hover,
+a.bg-emerald-500:hover,
+button.hover\:bg-emerald-500:hover,
+a.hover\:bg-emerald-500:hover,
+button.hover\:bg-emerald-600:hover,
+a.hover\:bg-emerald-600:hover {
+    background-color: #4338ca !important; /* Indigo-700 */
+    border-color: #4338ca !important;
+}
+
+/* Glowing shadow mappings to Indigo */
+.shadow-emerald-600\/20,
+.shadow-emerald-500\/20,
+.shadow-emerald-500\/10 {
+    --tw-shadow-color: rgba(79, 70, 229, 0.25) !important;
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
+}
+
+/* Success Alerts & Provisioned states: Emerald-500 (#10b981) */
+.success-alert, 
+.bg-emerald-500\/10.text-emerald-500 {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+    color: #10b981 !important;
+    border-color: rgba(16, 185, 129, 0.2) !important;
 }
